@@ -429,7 +429,7 @@ print('Now starting training for {:d} epochs'.format(args.n_epochs))
 train(audio_model, train_loader, val_loader, args)
 
 ###===========================================================================================================
-# Best model selected on the validation set
+# Load the best model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 sd = torch.load(args.exp_dir + '/models/best_audio_model_36.pth', map_location=device)
 audio_model.load_state_dict(sd)
