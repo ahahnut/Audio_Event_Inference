@@ -267,11 +267,12 @@ def train(audio_model, train_loader, test_loader, args):
     optimizer = torch.optim.Adam(trainables, args.lr, weight_decay=args.weight_decay, betas=(0.95, 0.999))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, list(range(10, 60)), gamma=1.0)
     
-    
+    ###-------------------------------------------------------------------------------------------------------
+    # Train Recurrent Settings
+    # result = np.zeros([args.n_epochs, 9])
     epoch += 1
     print("current #steps=%s, #epochs=%s" % (global_step, epoch))
     print("start training...")
-    result = np.zeros([args.n_epochs, 9])
     audio_model.train()
     while epoch < args.n_epochs + 1:
         audio_model.train()
@@ -280,11 +281,10 @@ def train(audio_model, train_loader, test_loader, args):
             B = audio_input.size(0)
             audio_input = audio_input.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
-
+            # 
             audio_output = audio_model(audio_input)
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(audio_output, torch.argmax(labels.long(), axis=1))
-
             # original optimization
             optimizer.zero_grad()
             loss.backward()
@@ -320,19 +320,16 @@ def train(audio_model, train_loader, test_loader, args):
         print("d_prime: {:.6f}".format(d_prime(mAUC)))
         print("valid_loss: {:.6f}".format(valid_loss))
 
-        result[epoch-1, :] = [mAP, acc, average_precision, average_recall, d_prime(mAUC), valid_loss, cum_mAP, cum_acc, optimizer.param_groups[0]['lr']]
-
         if acc > best_acc:
             best_acc = acc
             best_acc_epoch = epoch
             torch.save(audio_model.state_dict(), "%s/models/best_audio_model_36.pth" % (exp_dir))
 
         scheduler.step()
-
-        #print('number of params groups:' + str(len(optimizer.param_groups)))
-        print('Epoch-{0} lr: {1}'.format(epoch, optimizer.param_groups[0]['lr']))
-
         epoch += 1
+        print('number of params groups:' + str(len(optimizer.param_groups)))
+        print('Epoch-{0} lr: {1}'.format(epoch, optimizer.param_groups[0]['lr']))
+        # result[epoch-1, :] = [mAP, acc, average_precision, average_recall, d_prime(mAUC), valid_loss, cum_mAP, cum_acc, optimizer.param_groups[0]['lr']]
 
 
 ###===========================================================================================================
