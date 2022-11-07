@@ -435,8 +435,9 @@ sd = torch.load(args.exp_dir + '/models/best_audio_model_36.pth', map_location=d
 audio_model.load_state_dict(sd)
 # all_res = []
 
-# best model on the validation set, repeat to confirm
+# Best model on the validation set
 stats, _ = validate(audio_model, val_loader, args, 'valid_set')
+
 # note it is NOT mean of class-wise accuracy
 print('---------------evaluate on the validation set---------------')
 for i in range(36):
