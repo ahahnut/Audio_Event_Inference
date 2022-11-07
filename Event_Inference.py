@@ -243,7 +243,7 @@ class EffNetOri(torch.nn.Module):
 
 
 ###===========================================================================================================
-# Train Function (We need to change the audio model loading)
+# Train Function (We need to change the audio model loading and the performance metrics)
 def train(audio_model, train_loader, test_loader, args):
     # Device Setting
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -317,16 +317,17 @@ def train(audio_model, train_loader, test_loader, args):
         print("Avg Recall: {:.6f}".format(average_recall))
         print("d_prime: {:.6f}".format(d_prime(mAUC)))
         print("valid_loss: {:.6f}".format(valid_loss))
-
+        
+        # Save the best training model
         if acc > best_acc:
             best_acc = acc
             best_acc_epoch = epoch
             torch.save(audio_model.state_dict(), "%s/models/best_audio_model_36.pth" % (exp_dir))
-
         scheduler.step()
         epoch += 1
-        print('number of params groups:' + str(len(optimizer.param_groups)))
-        print('Epoch-{0} lr: {1}'.format(epoch, optimizer.param_groups[0]['lr']))
+        
+        # print('number of params groups:' + str(len(optimizer.param_groups)))
+        # print('Epoch-{0} lr: {1}'.format(epoch, optimizer.param_groups[0]['lr']))
         # result[epoch-1, :] = [mAP, acc, average_precision, average_recall, d_prime(mAUC), valid_loss, cum_mAP, cum_acc, optimizer.param_groups[0]['lr']]
 
 
