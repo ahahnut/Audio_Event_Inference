@@ -290,20 +290,17 @@ def train(audio_model, train_loader, test_loader, args):
             optimizer.step()
             global_step += 1
             # end_time = time.time()
-
+        
+        # validation in one training recurrent step
         print('start validation')
         stats, valid_loss = validate(audio_model, test_loader, args, epoch)
-
         cum_stats = stats
-
         cum_mAP = np.mean([stat['AP'] for stat in cum_stats])
         cum_mAUC = np.mean([stat['auc'] for stat in cum_stats])
         cum_acc = np.mean([stat['acc'] for stat in cum_stats])
-
         mAP = np.mean([stat['AP'] for stat in stats])
         mAUC = np.mean([stat['auc'] for stat in stats])
         acc = np.mean([stat['acc'] for stat in stats])
-
         middle_ps = [stat['precisions'][int(len(stat['precisions'])/2)] for stat in stats]
         middle_rs = [stat['recalls'][int(len(stat['recalls'])/2)] for stat in stats]
         average_precision = np.mean(middle_ps)
