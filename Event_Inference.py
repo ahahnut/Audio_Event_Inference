@@ -88,6 +88,8 @@ class VSDataset(Dataset):
 
         return fbank
 
+    ###---------------------------------------------------------------------------------------------------
+    # Prepare fbanks and Prepare one-hot labels
     def __getitem__(self, index):
         datum = self.data[index]
         label_indices = np.zeros(self.label_num) + 0.00
