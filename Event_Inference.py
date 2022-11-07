@@ -41,6 +41,8 @@ from torchvision.models.feature_extraction import create_feature_extractor
 # Data Preparation
 class VSDataset(Dataset):
     def __init__(self, dataset_json_file, label_csv=None, audio_conf=None, raw_wav_mode=False, specaug=False):
+        ###---------------------------------------------------------------------------------------------------
+        # Data Load (Audio + Labels)
         self.datapath = dataset_json_file
         with open(dataset_json_file, 'r') as fp:
             data_json = json.load(fp)
@@ -62,9 +64,9 @@ class VSDataset(Dataset):
             print('now using following mask: {:d} freq, {:d} time'.format(self.audio_conf.get('freqm'), self.audio_conf.get('timem')))
         self.specaug = specaug
         self.mixup = self.audio_conf.get('mixup')
-        #print('now using mix-up with rate {:f}'.format(self.mixup))
-        #print('now add rolling and new mixup stategy')
-
+    
+    ###---------------------------------------------------------------------------------------------------
+    # Data Load (Audio + Labels)
     def _wav2fbank(self, filename, filename2=None):
         # not mix-up, the colab version remove the mixup part
         waveform, sr = torchaudio.load(filename)
