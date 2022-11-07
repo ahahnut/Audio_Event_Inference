@@ -276,6 +276,7 @@ def train(audio_model, train_loader, test_loader, args):
     audio_model.train()
     while epoch < args.n_epochs + 1:
         audio_model.train()
+        # Load training data using enumerate
         for i, (audio_input, labels) in enumerate(train_loader):
             # measure data loading time
             B = audio_input.size(0)
