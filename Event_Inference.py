@@ -345,26 +345,25 @@ def validate(audio_model, val_loader, args, epoch):
     # Start validation recurrent steps
     with torch.no_grad():
         for i, (audio_input, labels) in enumerate(val_loader):
+            # Load Validation Data and Move them to device
             audio_input = audio_input.to(device)
             labels = labels.to(device)
-            
             # compute output
             audio_output = audio_model(audio_input)
             predictions = audio_output.to('cpu').detach()
-
-            A_predictions.append(predictions)
-            A_targets.append(labels)
-
             # compute the loss
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(audio_output, torch.argmax(labels.long(), axis=1))
+            
+            # compute output
+            A_predictions.append(predictions)
+            A_targets.append(labels)
             A_loss.append(loss.to('cpu').detach())
 
         audio_output = torch.cat(A_predictions)
         target = torch.cat(A_targets)
         loss = np.mean(A_loss)
         stats = calculate_stats(audio_output, target)
-
     return stats, loss
 
 
