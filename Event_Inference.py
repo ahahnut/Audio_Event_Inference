@@ -334,8 +334,7 @@ def train(audio_model, train_loader, test_loader, args):
 ###===========================================================================================================
 # Validate Function 
 def validate(audio_model, val_loader, args, epoch):
-    
-    
+    # Device Setting
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     audio_model = audio_model.to(device)
     audio_model.eval()
