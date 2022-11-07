@@ -36,84 +36,9 @@ import ast
 import numpy as np
 from torchvision.models.feature_extraction import create_feature_extractor
 
-class EffNetOri(torch.nn.Module):
-    def __init__(self, label_dim=6, pretrain=True, level=0):
-        super().__init__()
-        b = int(level)
-        if pretrain == True:
-            print('now train a effnet-b{:d} model with ImageNet pretrain'.format(b))
-        else:
-            print('now train a effnet-b{:d} model without ImageNet pretrain'.format(b))
-        if b == 7:
-            self.model = torchvision.models.efficientnet_b7(pretrained=pretrain)
-        elif b == 6:
-            self.model = torchvision.models.efficientnet_b6(pretrained=pretrain)
-        elif b == 5:
-            self.model = torchvision.models.efficientnet_b5(pretrained=pretrain)
-        elif b == 4:
-            self.model = torchvision.models.efficientnet_b4(pretrained=pretrain)
-        elif b == 3:
-            self.model = torchvision.models.efficientnet_b3(pretrained=pretrain)
-        elif b == 2:
-            self.model = torchvision.models.efficientnet_b2(pretrained=pretrain)
-        elif b == 1:
-            self.model = torchvision.models.efficientnet_b1(pretrained=pretrain)
-        elif b == 0:
-            self.model = torchvision.models.efficientnet_b0(pretrained=pretrain)
 
-        new_proj = torch.nn.Conv2d(3, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-        print('conv1 get from pretrained model.')
-        new_proj.weight = torch.nn.Parameter(torch.sum(self.model.features[0][0].weight, dim=1).unsqueeze(1))
-        new_proj.bias = self.model.features[0][0].bias
-        self.model.features[0][0] = new_proj
-        self.model = create_feature_extractor(self.model, {'features.8': 'mout'})
-        self.feat_dim, self.freq_dim = self.get_dim()
-        self.linear = nn.Linear(self.feat_dim, label_dim)
-
-    def get_dim(self):
-        # expect input x = (batch_size, time_frame_num, frequency_bins), e.g., (12, 1024, 128)
-        x = torch.zeros(10, 1000, 128)
-        x = x.unsqueeze(1)
-        x = x.transpose(2, 3)
-        x = self.model(x)['mout']
-        return int(x.shape[1]), int(x.shape[2])
-
-    def forward(self, x):
-        # expect input x = (batch_size, time_frame_num, frequency_bins), e.g., (12, 1024, 128)
-        x = x.unsqueeze(1)
-        x = x.transpose(2, 3)
-        x = self.model(x)['mout']
-        x = torch.mean(x, dim=[2, 3])
-        x = self.linear(x)
-        return x
-
-def make_index_dict(label_csv):
-    index_lookup = {}
-    with open(label_csv, 'r') as f:
-        csv_reader = csv.DictReader(f)
-        line_count = 0
-        for row in csv_reader:
-            index_lookup[row['mid']] = row['index']
-            line_count += 1
-    return index_lookup
-
-def make_name_dict(label_csv):
-    name_lookup = {}
-    with open(label_csv, 'r') as f:
-        csv_reader = csv.DictReader(f)
-        line_count = 0
-        for row in csv_reader:
-            name_lookup[row['index']] = row['display_name']
-            line_count += 1
-    return name_lookup
-
-def lookup_list(index_list, label_csv):
-    label_list = []
-    table = make_name_dict(label_csv)
-    for item in index_list:
-        label_list.append(table[item])
-    return label_list
-
+###===========================================================================================================
+# Data Preparation
 class VSDataset(Dataset):
     def __init__(self, dataset_json_file, label_csv=None, audio_conf=None, raw_wav_mode=False, specaug=False):
         self.datapath = dataset_json_file
@@ -191,6 +116,85 @@ class VSDataset(Dataset):
 
     def __len__(self):
         return len(self.data)
+
+
+class EffNetOri(torch.nn.Module):
+    def __init__(self, label_dim=6, pretrain=True, level=0):
+        super().__init__()
+        b = int(level)
+        if pretrain == True:
+            print('now train a effnet-b{:d} model with ImageNet pretrain'.format(b))
+        else:
+            print('now train a effnet-b{:d} model without ImageNet pretrain'.format(b))
+        if b == 7:
+            self.model = torchvision.models.efficientnet_b7(pretrained=pretrain)
+        elif b == 6:
+            self.model = torchvision.models.efficientnet_b6(pretrained=pretrain)
+        elif b == 5:
+            self.model = torchvision.models.efficientnet_b5(pretrained=pretrain)
+        elif b == 4:
+            self.model = torchvision.models.efficientnet_b4(pretrained=pretrain)
+        elif b == 3:
+            self.model = torchvision.models.efficientnet_b3(pretrained=pretrain)
+        elif b == 2:
+            self.model = torchvision.models.efficientnet_b2(pretrained=pretrain)
+        elif b == 1:
+            self.model = torchvision.models.efficientnet_b1(pretrained=pretrain)
+        elif b == 0:
+            self.model = torchvision.models.efficientnet_b0(pretrained=pretrain)
+
+        new_proj = torch.nn.Conv2d(3, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        print('conv1 get from pretrained model.')
+        new_proj.weight = torch.nn.Parameter(torch.sum(self.model.features[0][0].weight, dim=1).unsqueeze(1))
+        new_proj.bias = self.model.features[0][0].bias
+        self.model.features[0][0] = new_proj
+        self.model = create_feature_extractor(self.model, {'features.8': 'mout'})
+        self.feat_dim, self.freq_dim = self.get_dim()
+        self.linear = nn.Linear(self.feat_dim, label_dim)
+
+    def get_dim(self):
+        # expect input x = (batch_size, time_frame_num, frequency_bins), e.g., (12, 1024, 128)
+        x = torch.zeros(10, 1000, 128)
+        x = x.unsqueeze(1)
+        x = x.transpose(2, 3)
+        x = self.model(x)['mout']
+        return int(x.shape[1]), int(x.shape[2])
+
+    def forward(self, x):
+        # expect input x = (batch_size, time_frame_num, frequency_bins), e.g., (12, 1024, 128)
+        x = x.unsqueeze(1)
+        x = x.transpose(2, 3)
+        x = self.model(x)['mout']
+        x = torch.mean(x, dim=[2, 3])
+        x = self.linear(x)
+        return x
+
+def make_index_dict(label_csv):
+    index_lookup = {}
+    with open(label_csv, 'r') as f:
+        csv_reader = csv.DictReader(f)
+        line_count = 0
+        for row in csv_reader:
+            index_lookup[row['mid']] = row['index']
+            line_count += 1
+    return index_lookup
+
+def make_name_dict(label_csv):
+    name_lookup = {}
+    with open(label_csv, 'r') as f:
+        csv_reader = csv.DictReader(f)
+        line_count = 0
+        for row in csv_reader:
+            name_lookup[row['index']] = row['display_name']
+            line_count += 1
+    return name_lookup
+
+def lookup_list(index_list, label_csv):
+    label_list = []
+    table = make_name_dict(label_csv)
+    for item in index_list:
+        label_list.append(table[item])
+    return label_list
 
 def d_prime(auc):
     standard_normal = stats_func.norm()
