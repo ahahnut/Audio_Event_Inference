@@ -249,16 +249,13 @@ def train(audio_model, train_loader, test_loader, args):
     # Device Setting
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
-    
-    
-    torch.set_grad_enabled(True)
+    # Measurement Initialize 
     best_epoch, best_cum_epoch, best_mAP, best_acc, best_cum_mAP = 0, 0, -np.inf, -np.inf, -np.inf
     global_step, epoch = 0, 0
-    
     # 
     exp_dir = args.exp_dir
     
-    
+    torch.set_grad_enabled(True)
     audio_model = audio_model.to(device)
     # Set up the optimizer
     audio_trainables = [p for p in audio_model.parameters() if p.requires_grad]
