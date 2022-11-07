@@ -284,13 +284,12 @@ def train(audio_model, train_loader, test_loader, args):
             audio_output = audio_model(audio_input)
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(audio_output, torch.argmax(labels.long(), axis=1))
-            # original optimization
+            # Optimization Initialization and Backward
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
-            end_time = time.time()
             global_step += 1
+            # end_time = time.time()
 
         print('start validation')
         stats, valid_loss = validate(audio_model, test_loader, args, epoch)
