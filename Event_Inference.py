@@ -244,7 +244,7 @@ class EffNetOri(torch.nn.Module):
 
 
 ###===========================================================================================================
-# Train Function (We need to change )
+# Train Function (We need to change the audio model loading)
 def train(audio_model, train_loader, test_loader, args):
     # Device Setting
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
