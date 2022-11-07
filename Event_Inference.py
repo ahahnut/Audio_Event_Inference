@@ -348,7 +348,7 @@ def validate(audio_model, val_loader, args, epoch):
             # Load Validation Data and Move them to device
             audio_input = audio_input.to(device)
             labels = labels.to(device)
-            # compute output
+            # Compute output
             audio_output = audio_model(audio_input)
             predictions = audio_output.to('cpu').detach()
             # compute the loss
