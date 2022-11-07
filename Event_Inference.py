@@ -337,6 +337,7 @@ def validate(audio_model, val_loader, args, epoch):
     # Device Setting
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     audio_model = audio_model.to(device)
+    # Model Evaluation
     audio_model.eval()
 
     A_predictions, A_targets, A_loss = [], [], []
