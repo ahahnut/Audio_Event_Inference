@@ -355,7 +355,7 @@ def validate(audio_model, val_loader, args, epoch):
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(audio_output, torch.argmax(labels.long(), axis=1))
             
-            # compute output
+            # Save the required statistics in one validation recurrent step
             A_predictions.append(predictions)
             A_targets.append(labels)
             A_loss.append(loss.to('cpu').detach())
