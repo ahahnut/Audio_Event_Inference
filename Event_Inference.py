@@ -246,29 +246,32 @@ class EffNetOri(torch.nn.Module):
 ###===========================================================================================================
 # Train Function (We need to change )
 def train(audio_model, train_loader, test_loader, args):
-    ### 
+    # Device Setting
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
+    
+    
     torch.set_grad_enabled(True)
     best_epoch, best_cum_epoch, best_mAP, best_acc, best_cum_mAP = 0, 0, -np.inf, -np.inf, -np.inf
     global_step, epoch = 0, 0
+    
+    # 
     exp_dir = args.exp_dir
+    
+    
     audio_model = audio_model.to(device)
     # Set up the optimizer
     audio_trainables = [p for p in audio_model.parameters() if p.requires_grad]
     print('Total parameter number is : {:.3f} million'.format(sum(p.numel() for p in audio_model.parameters()) / 1000000))
     print('Total trainable parameter number is : {:.3f} million'.format(sum(p.numel() for p in audio_trainables) / 1000000))
     trainables = audio_trainables
-
     optimizer = torch.optim.Adam(trainables, args.lr, weight_decay=args.weight_decay, betas=(0.95, 0.999))
-
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, list(range(10, 60)), gamma=1.0)
-
+    
+    
     epoch += 1
-
     print("current #steps=%s, #epochs=%s" % (global_step, epoch))
     print("start training...")
-
     result = np.zeros([args.n_epochs, 9])
     audio_model.train()
     while epoch < args.n_epochs + 1:
