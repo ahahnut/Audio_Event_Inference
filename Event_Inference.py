@@ -280,7 +280,7 @@ def train(audio_model, train_loader, test_loader, args):
             # Move audio input and labels to device
             audio_input = audio_input.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
-            # 
+            # Audio Model uses Audio Input to obtain the audio output 
             audio_output = audio_model(audio_input)
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(audio_output, torch.argmax(labels.long(), axis=1))
