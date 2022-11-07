@@ -38,7 +38,6 @@ from torchvision.models.feature_extraction import create_feature_extractor
 
 ###===========================================================================================================
 # Utility Functions
-
 ###-----------------------------------------------------------------------------------------------------------
 # Read CSV Label Files
 def make_index_dict(label_csv):
@@ -278,8 +277,7 @@ def train(audio_model, train_loader, test_loader, args):
         audio_model.train()
         # Load training data using enumerate
         for i, (audio_input, labels) in enumerate(train_loader):
-            # measure data loading time
-            B = audio_input.size(0)
+            # Move audio input and labels to device
             audio_input = audio_input.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
             # 
@@ -369,7 +367,7 @@ print("I am process %s, running on %s: starting (%s)" % (
         os.getpid(), os.uname()[1], time.asctime()))
 
 
-
+###===========================================================================================================
 # I/O args
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data-train", type=str, default='/home/hxu16/code/vocalsound/data/datafiles_36/tr.json', help="training data json")
@@ -397,7 +395,7 @@ parser.add_argument('--timem', help='time mask max length', type=int, default=19
 parser.add_argument("--mixup", type=float, default=0, help="how many (0-1) samples need to be mixup during training")
 args = parser.parse_args(args=[])
 
-
+###===========================================================================================================
 audio_conf = {'num_mel_bins': 128, 'target_length': 512, 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'mode': 'train'}
 train_loader = torch.utils.data.DataLoader(
     VSDataset(args.data_train, label_csv=args.label_csv, audio_conf=audio_conf, raw_wav_mode=False, specaug=True),
@@ -408,11 +406,13 @@ val_loader = torch.utils.data.DataLoader(
     VSDataset(args.data_val, label_csv=args.label_csv, audio_conf=val_audio_conf, raw_wav_mode=False),
     batch_size=200, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
+###===========================================================================================================
 if args.model == 'eff_mean':
     audio_model = EffNetOri(label_dim=args.n_class, level=args.model_size, pretrain=args.imagenet_pretrain)
 else:
     raise ValueError('Model Unrecognized')
 
+###===========================================================================================================
 # start training
 if os.path.exists(args.exp_dir):
     print("Deleting existing experiment directory %s" % args.exp_dir)
@@ -421,23 +421,19 @@ print("\nCreating experiment directory: %s" % args.exp_dir)
 os.makedirs("%s/models" % args.exp_dir)
 with open("%s/args.pkl" % args.exp_dir, "wb") as f:
     pickle.dump(args, f)
-
 print('Now starting training for {:d} epochs'.format(args.n_epochs))
 train(audio_model, train_loader, val_loader, args)
 
-# test on the test set and sub-test set, model selected on the validation set
+###===========================================================================================================
+# model selected on the validation set
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 sd = torch.load(args.exp_dir + '/models/best_audio_model_36.pth', map_location=device)
 audio_model.load_state_dict(sd)
-
 all_res = []
-
 # best model on the validation set, repeat to confirm
 stats, _ = validate(audio_model, val_loader, args, 'valid_set')
-
 # note it is NOT mean of class-wise accuracy
 print('---------------evaluate on the validation set---------------')
-
 for i in range(36):
     val_acc = stats[i]['acc']
     val_precision = stats[i]['AP']
@@ -451,29 +447,3 @@ for i in range(36):
     print("Recall: {:.6f}".format(val_recall))
     print("F1: {:.6f}".format(val_f1))
     print("Auc: {:.6f}".format(val_auc))
-
-# test the model on the evaluation set
-# data_eval_list = ['real_te_36.json']
-# eval_name_list = ['real_test']
-
-# data_dir = '/'.join(args.data_val.split('/')[:-1])
-# for idx, cur_eval in enumerate(data_eval_list):
-#     cur_eval = data_dir + '/' + cur_eval
-#     eval_loader = torch.utils.data.DataLoader(
-#         VSDataset(cur_eval, label_csv=args.label_csv, audio_conf=val_audio_conf),
-#         batch_size=args.batch_size*2, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-#     stats, _ = validate(audio_model, eval_loader, args, eval_name_list[idx])
-
-#     for i in range(len(stats)):
-#         val_acc = stats[i]['acc']
-#         val_precision = stats[i]['AP']
-#         # val_recall = np.mean(stats[i]['recalls'])
-#         val_f1 = np.mean(stats[i]['f1'])
-#         # val_auc = stats[i]['auc']
-
-#         print('------------------------------')
-#         print("Accuracy: {:.6f}".format(val_acc))
-#         print("Precision: {:.6f}".format(val_precision))
-#         # print("Recall: {:.6f}".format(val_recall))
-#         print("F1: {:.6f}".format(val_f1))
-#         # print("Auc: {:.6f}".format(val_auc))
