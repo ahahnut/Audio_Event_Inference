@@ -341,10 +341,13 @@ def validate(audio_model, val_loader, args, epoch):
     audio_model.eval()
     # Statistic Results Initialization
     A_predictions, A_targets, A_loss = [], [], []
+    
+    # Start validation recurrent steps
     with torch.no_grad():
         for i, (audio_input, labels) in enumerate(val_loader):
             audio_input = audio_input.to(device)
-
+            labels = labels.to(device)
+            
             # compute output
             audio_output = audio_model(audio_input)
             predictions = audio_output.to('cpu').detach()
@@ -353,7 +356,6 @@ def validate(audio_model, val_loader, args, epoch):
             A_targets.append(labels)
 
             # compute the loss
-            labels = labels.to(device)
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(audio_output, torch.argmax(labels.long(), axis=1))
             A_loss.append(loss.to('cpu').detach())
