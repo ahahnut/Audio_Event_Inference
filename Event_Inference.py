@@ -398,11 +398,12 @@ parser.add_argument("--mixup", type=float, default=0, help="how many (0-1) sampl
 args = parser.parse_args(args=[])
 
 ###===========================================================================================================
+# Training Data Loading
 audio_conf = {'num_mel_bins': 128, 'target_length': 512, 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'mode': 'train'}
 train_loader = torch.utils.data.DataLoader(
     VSDataset(args.data_train, label_csv=args.label_csv, audio_conf=audio_conf, raw_wav_mode=False, specaug=True),
     batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
-
+# Validation Data Loading
 val_audio_conf = {'num_mel_bins': 128, 'target_length': 512, 'mixup': 0, 'mode': 'test'}
 val_loader = torch.utils.data.DataLoader(
     VSDataset(args.data_val, label_csv=args.label_csv, audio_conf=val_audio_conf, raw_wav_mode=False),
