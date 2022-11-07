@@ -354,12 +354,11 @@ def validate(audio_model, val_loader, args, epoch):
             # Compute loss
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(audio_output, torch.argmax(labels.long(), axis=1))
-            
             # Save the required statistics in one validation recurrent step
             A_predictions.append(predictions)
             A_targets.append(labels)
             A_loss.append(loss.to('cpu').detach())
-
+        # Cat the current and previous statistics
         audio_output = torch.cat(A_predictions)
         target = torch.cat(A_targets)
         loss = np.mean(A_loss)
