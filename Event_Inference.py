@@ -332,7 +332,7 @@ def train(audio_model, train_loader, test_loader, args):
 
 
 ###===========================================================================================================
-# Validate Function 
+# Validate Function (We need to change the audio model loading)
 def validate(audio_model, val_loader, args, epoch):
     # Device Setting
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -370,7 +370,7 @@ def validate(audio_model, val_loader, args, epoch):
 print("I am process %s, running on %s: starting (%s)" % (
         os.getpid(), os.uname()[1], time.asctime()))
 ###===========================================================================================================
-# I/O args
+# I/O args settings
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data-train", type=str, default='/home/hxu16/code/vocalsound/data/datafiles_36/tr.json', help="training data json")
 parser.add_argument("--data-val", type=str, default='/home/hxu16/code/vocalsound/data/datafiles_36/val.json', help="validation data json")
