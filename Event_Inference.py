@@ -40,9 +40,9 @@ from torchvision.models.feature_extraction import create_feature_extractor
 ###===========================================================================================================
 # Data Preparation
 class VSDataset(Dataset):
+    ###---------------------------------------------------------------------------------------------------
+    # Data Load (Audio + Labels)
     def __init__(self, dataset_json_file, label_csv=None, audio_conf=None, raw_wav_mode=False, specaug=False):
-        ###---------------------------------------------------------------------------------------------------
-        # Data Load (Audio + Labels)
         self.datapath = dataset_json_file
         with open(dataset_json_file, 'r') as fp:
             data_json = json.load(fp)
@@ -52,7 +52,6 @@ class VSDataset(Dataset):
         self.melbins = self.audio_conf.get('num_mel_bins')
         self.index_dict = make_index_dict(label_csv)
         self.label_num = len(self.index_dict)
-        #print('Number of classes is {:d}'.format(self.label_num))
 
         self.windows = {'hamming': scipy.signal.hamming, 'hann': scipy.signal.hann, 'blackman': scipy.signal.blackman, 'bartlett': scipy.signal.bartlett}
 
@@ -66,7 +65,7 @@ class VSDataset(Dataset):
         self.mixup = self.audio_conf.get('mixup')
     
     ###---------------------------------------------------------------------------------------------------
-    # Data Load (Audio + Labels)
+    # Transform Audio into fbank
     def _wav2fbank(self, filename, filename2=None):
         # not mix-up, the colab version remove the mixup part
         waveform, sr = torchaudio.load(filename)
