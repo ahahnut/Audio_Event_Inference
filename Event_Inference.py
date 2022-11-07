@@ -294,10 +294,14 @@ def train(audio_model, train_loader, test_loader, args):
         # validation in one training recurrent step
         print('start validation')
         stats, valid_loss = validate(audio_model, test_loader, args, epoch)
-        cum_stats = stats
-        cum_mAP = np.mean([stat['AP'] for stat in cum_stats])
-        cum_mAUC = np.mean([stat['auc'] for stat in cum_stats])
-        cum_acc = np.mean([stat['acc'] for stat in cum_stats])
+        
+        
+        # cum_stats = stats
+        # cum_mAP = np.mean([stat['AP'] for stat in cum_stats])
+        # cum_mAUC = np.mean([stat['auc'] for stat in cum_stats])
+        # cum_acc = np.mean([stat['acc'] for stat in cum_stats])
+        
+        # Calculate the Performance Metrics and Print the Metrics
         mAP = np.mean([stat['AP'] for stat in stats])
         mAUC = np.mean([stat['auc'] for stat in stats])
         acc = np.mean([stat['acc'] for stat in stats])
@@ -305,7 +309,6 @@ def train(audio_model, train_loader, test_loader, args):
         middle_rs = [stat['recalls'][int(len(stat['recalls'])/2)] for stat in stats]
         average_precision = np.mean(middle_ps)
         average_recall = np.mean(middle_rs)
-
         print("---------------------Epoch {:d} Results---------------------".format(epoch))
         print("ACC: {:.6f}".format(acc))
         print("mAP: {:.6f}".format(mAP))
