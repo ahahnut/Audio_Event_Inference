@@ -255,12 +255,14 @@ def train(audio_model, train_loader, test_loader, args):
     # Save Model Path
     exp_dir = args.exp_dir
     
+    # Audio model setting and its parameters
     torch.set_grad_enabled(True)
     audio_model = audio_model.to(device)
-    # Set up the optimizer
     audio_trainables = [p for p in audio_model.parameters() if p.requires_grad]
     print('Total parameter number is : {:.3f} million'.format(sum(p.numel() for p in audio_model.parameters()) / 1000000))
     print('Total trainable parameter number is : {:.3f} million'.format(sum(p.numel() for p in audio_trainables) / 1000000))
+    
+    # Set up the optimizer and the corresponding hyperparameters
     trainables = audio_trainables
     optimizer = torch.optim.Adam(trainables, args.lr, weight_decay=args.weight_decay, betas=(0.95, 0.999))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, list(range(10, 60)), gamma=1.0)
@@ -273,7 +275,6 @@ def train(audio_model, train_loader, test_loader, args):
     audio_model.train()
     while epoch < args.n_epochs + 1:
         audio_model.train()
-
         for i, (audio_input, labels) in enumerate(train_loader):
             # measure data loading time
             B = audio_input.size(0)
@@ -320,8 +321,6 @@ def train(audio_model, train_loader, test_loader, args):
         print("valid_loss: {:.6f}".format(valid_loss))
 
         result[epoch-1, :] = [mAP, acc, average_precision, average_recall, d_prime(mAUC), valid_loss, cum_mAP, cum_acc, optimizer.param_groups[0]['lr']]
-
-        np.savetxt(exp_dir + '/result_36.csv', result, delimiter=',')
 
         if acc > best_acc:
             best_acc = acc
@@ -398,18 +397,15 @@ parser.add_argument('--imagenet_pretrain', help='if use pretrained imagenet effi
 parser.add_argument('--freqm', help='frequency mask max length', type=int, default=48)
 parser.add_argument('--timem', help='time mask max length', type=int, default=192)
 parser.add_argument("--mixup", type=float, default=0, help="how many (0-1) samples need to be mixup during training")
-
 args = parser.parse_args(args=[])
 
-audio_conf = {'num_mel_bins': 128, 'target_length': 512, 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'mode': 'train'}
 
-print('balanced sampler is not used')
+audio_conf = {'num_mel_bins': 128, 'target_length': 512, 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'mode': 'train'}
 train_loader = torch.utils.data.DataLoader(
     VSDataset(args.data_train, label_csv=args.label_csv, audio_conf=audio_conf, raw_wav_mode=False, specaug=True),
     batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
 
 val_audio_conf = {'num_mel_bins': 128, 'target_length': 512, 'mixup': 0, 'mode': 'test'}
-
 val_loader = torch.utils.data.DataLoader(
     VSDataset(args.data_val, label_csv=args.label_csv, audio_conf=val_audio_conf, raw_wav_mode=False),
     batch_size=200, shuffle=False, num_workers=args.num_workers, pin_memory=True)
