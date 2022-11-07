@@ -417,7 +417,7 @@ else:
     raise ValueError('Model Unrecognized')
 
 ###===========================================================================================================
-# start training
+# Start training
 if os.path.exists(args.exp_dir):
     print("Deleting existing experiment directory %s" % args.exp_dir)
     shutil.rmtree(args.exp_dir)
@@ -429,11 +429,12 @@ print('Now starting training for {:d} epochs'.format(args.n_epochs))
 train(audio_model, train_loader, val_loader, args)
 
 ###===========================================================================================================
-# model selected on the validation set
+# Best model selected on the validation set
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 sd = torch.load(args.exp_dir + '/models/best_audio_model_36.pth', map_location=device)
 audio_model.load_state_dict(sd)
-all_res = []
+# all_res = []
+
 # best model on the validation set, repeat to confirm
 stats, _ = validate(audio_model, val_loader, args, 'valid_set')
 # note it is NOT mean of class-wise accuracy
@@ -444,7 +445,6 @@ for i in range(36):
     val_recall = np.mean(stats[i]['recalls'])
     val_f1 = np.mean(stats[i]['f1'])
     val_auc = stats[i]['auc']
-
     print('------------------------------')
     print("Accuracy: {:.6f}".format(val_acc))
     print("Precision: {:.6f}".format(val_precision))
