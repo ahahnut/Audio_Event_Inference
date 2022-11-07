@@ -410,6 +410,7 @@ val_loader = torch.utils.data.DataLoader(
     batch_size=200, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
 ###===========================================================================================================
+# Model Loading
 if args.model == 'eff_mean':
     audio_model = EffNetOri(label_dim=args.n_class, level=args.model_size, pretrain=args.imagenet_pretrain)
 else:
