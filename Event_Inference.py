@@ -339,7 +339,7 @@ def validate(audio_model, val_loader, args, epoch):
     audio_model = audio_model.to(device)
     # Model Evaluation
     audio_model.eval()
-
+    # Statistic Results Initialization
     A_predictions, A_targets, A_loss = [], [], []
     with torch.no_grad():
         for i, (audio_input, labels) in enumerate(val_loader):
