@@ -438,7 +438,7 @@ audio_model.load_state_dict(sd)
 # Best model on the validation set
 stats, _ = validate(audio_model, val_loader, args, 'valid_set')
 
-# note it is NOT mean of class-wise accuracy
+# Calculate Performance Metrics
 print('---------------evaluate on the validation set---------------')
 for i in range(36):
     val_acc = stats[i]['acc']
