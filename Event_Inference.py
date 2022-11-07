@@ -332,8 +332,10 @@ def train(audio_model, train_loader, test_loader, args):
 
 
 ###===========================================================================================================
-# Train Session
+# Validate Function 
 def validate(audio_model, val_loader, args, epoch):
+    
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     audio_model = audio_model.to(device)
     audio_model.eval()
@@ -363,10 +365,10 @@ def validate(audio_model, val_loader, args, epoch):
 
     return stats, loss
 
+
+###===========================================================================================================
 print("I am process %s, running on %s: starting (%s)" % (
         os.getpid(), os.uname()[1], time.asctime()))
-
-
 ###===========================================================================================================
 # I/O args
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
