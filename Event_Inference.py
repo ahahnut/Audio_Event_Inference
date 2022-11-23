@@ -1,39 +1,23 @@
 import argparse
-import os
 import pickle
-import sys
-import time
-import torch
-import torch.nn as nn
 import shutil
-import numpy as np
-import torchvision
 import csv
 import json
-import torchaudio
-import numpy as np
 import scipy.signal
-import torch
-import torch.nn.functional
-from torch.utils.data import Dataset
 import random
 import numpy as np
 from scipy import stats as stats_func
-from sklearn import metrics
-import torch
-import os
 import datetime
-import time
-import torch
-import numpy as np
-import pickle
-import argparse
 import sys
 import time
-import torch
-import shutil
 import ast
-import numpy as np
+import torch
+import torch.nn as nn
+import torchaudio
+import torchvision
+import torch.nn.functional as F
+from torch.utils.data import Dataset
+from sklearn import metrics
 from torchvision.models.feature_extraction import create_feature_extractor
 
 ###===========================================================================================================
@@ -222,6 +206,12 @@ class EffNetOri(torch.nn.Module):
         self.model.features[0][0] = new_proj
         self.model = create_feature_extractor(self.model, {'features.8': 'mout'})
         self.feat_dim, self.freq_dim = self.get_dim()
+        
+        self.hidden_size = self.feat_dim
+        num_layers = 2
+        self.rnn = nn.RNN(self.feat_dim, self.hidden_size, num_layers, batch_first=True)
+        # self.rnn = nn.LSTM(self.feat_dim, self.hidden_size, num_layers, batch_first=True)
+        
         self.linear = nn.Linear(self.feat_dim, label_dim)
 
     def get_dim(self):
@@ -231,6 +221,13 @@ class EffNetOri(torch.nn.Module):
         x = x.transpose(2, 3)
         x = self.model(x)['mout']
         return int(x.shape[1]), int(x.shape[2])
+    
+    def attention_net(self,lstm_output, final_state):
+        hidden = final_state.view(-1, self.hidden_size, 1)
+        attn_weights = torch.bmm(lstm_output, hidden).squeeze(2)
+        soft_attn_weights = F.softmax(attn_weights, 1)
+        context = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
+        return context
 
     def forward(self, x):
         # expect input x = (batch_size, time_frame_num, frequency_bins), e.g., (12, 1024, 128)
@@ -238,6 +235,8 @@ class EffNetOri(torch.nn.Module):
         x = x.transpose(2, 3)
         x = self.model(x)['mout']
         x = torch.mean(x, dim=[2, 3])
+        x, _ = self.rnn(x)
+        # x = self.attention_net(x, self.hidden_size)
         x = self.linear(x)
         return x
 
